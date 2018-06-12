@@ -3,7 +3,7 @@ const flatten = require('obj-flatten')
 const fs = require('fs')
 const JsonToCsvParser = require('json2csv').Parser
 
-const gsaCodeJson = {
+const codeJsons = {
   gsa: 'https://open.gsa.gov/code.json',
   dot: 'https://www.transportation.gov/code.json',
   nasa: 'https://code.nasa.gov/code.json'
@@ -69,7 +69,7 @@ function getScore(flattenedRepo) {
   return score
 }
 
-getCodeJson(gsaCodeJson.dot)
+getCodeJson(codeJsons.dot)
   .then(codeJson => {
     return codeJson.releases.map(repo => {
       const flattenedRepo = flattenObject(repo)

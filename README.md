@@ -66,3 +66,28 @@ The regular search score that we use from Elasticsearch will not be affected or 
 ### 0.1 point fields
 
 * additional_information
+
+## Running the project
+
+1. Clone the repository to your machine: `git clone git@github.com:GSA/code-gov-data-quality-poc.git`
+2. Change into the project directory: `cd code-gov-data-quality-poc`
+3. Install all dependencies: `npm install`
+4. Run project start command: `npm start`
+
+The execution of this project will create a file on your machine called `scoredRepos.csv`
+
+### Changing datasorce
+
+We are only using three datasources for this POC. They can be found in the `app.js`file. To change what datasource is being used you have to edit the line with the following code `getCodeJson(codeJsons.dot)`. The options are `codeJsons.gsa`, `codeJsons.dot`, and `codeJsons.nasa`.
+
+Ex.
+
+```
+getCodeJson(codeJsons.dot)
+```
+
+Change to:
+
+```
+getCodeJson(codeJsons.gsa)
+```
