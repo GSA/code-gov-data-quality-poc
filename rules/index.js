@@ -1,3 +1,13 @@
+function isValidUrl(url) {
+  const pattern = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/g
+
+  return url.match(pattern) ? true : false;
+}
+
+function isValidEmail(email) {
+  const pattern = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return email.match(pattern) ? true : false;
+}
 function getScore(target, value) {
   return target.score ? target.score + value : value;
 }
@@ -43,15 +53,14 @@ function getFieldWeight(field) {
   return fields[field] ? fields[field] : 0;
 }
 
-
-export default function () {
+module.exports = function () {
   return [
     {
       validation: function (target) {
         return target['name'] ? true : false;
       },
       outcome: function (target) {
-        target.score = getScore(target.score, getFieldWeight('name'));
+        target.score = getScore(target, getFieldWeight('name'));
         return target;
       }
     },
@@ -61,37 +70,34 @@ export default function () {
         if (target['description']) {
           isValid = target['description'] === target['name'] ? false : true;
         }
-        
+
         isValid = target['description'].split(' ').length > 3
-        
+
         return isValid;
       },
       outcome: function (target) {
         const description = target['description'].split(' ');
 
         if (description.length > 30) {
-          target.score = getScore(target.score, getFieldWeight('description'));
+          target.score = getScore(target, getFieldWeight('description'));
         } else if (description.length < 30 && description.length > 10) {
-          target.score = getScore(target.score, 0.5);
+          target.score = getScore(target, 0.5);
         } else {
-          target.score = getScore(target.score, 0.1);
+          target.score = getScore(target, 0.1);
         }
-        
+
         return target;
       }
     },
     {
       validation: function (target) {
-        const url = target['permissions.licenses.URL'];
-        if (url) {
-          return url.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/g)
-            ? true
-            : false;
+        if (target['permissions.licenses.URL']) {
+          return isValidUrl(target['permissions.licenses.URL']);
         }
         return false;
       },
       outcome: function (target) {
-        target.score = getScore(target.score, getFieldWeight('permissions.licenses.URL'));
+        target.score = getScore(target, getFieldWeight('permissions.licenses.URL'));
         return target;
       }
     },
@@ -100,7 +106,7 @@ export default function () {
         return target['permissions.licenses.name'] ? true : false;
       },
       outcome: function (target) {
-        target.score = getScore(target.score, getFieldWeight('permissions.licenses.name'));
+        target.score = getScore(target, getFieldWeight('permissions.licenses.name'));
         return target;
       }
     },
@@ -112,268 +118,285 @@ export default function () {
         const usageType = target['permissions.usageType']
 
         if (usageType.toLowerCase() === 'opensource') {
-          target.score = getScore(target.score, getFieldWeight('permissions.usageType'));
+          target.score = getScore(target, getFieldWeight('permissions.usageType'));
         } else if (usageType.toLowerCase() === 'governmentwidereuse') {
-          target.score = getScore(target.score, 0.5);
+          target.score = getScore(target, 0.5);
         } else {
-          target.score = getScore(target.score, 0.1);
+          target.score = getScore(target, 0.1);
         }
-        
+
         return target;
       }
     },
     {
       validation: function (target) {
-        if(target['permissions.usageType']){
+        if(target['permissions.usageType'].match(/^excempt.*/g)){
           return target['permissions.exemptionText'] ? true : false;
         }
+        return false;
       },
       outcome: function (target) {
-
+        target.score = getScore(target, getFieldWeight('permissions.exemptionText'));
+        return target;
       }
     },
     {
-      field: "organization",
-      validation: function (value) {
-
+      validation: function (target) {
+        return target['organization'] ? true : false;
       },
       outcome: function (target) {
-
+        target.score = getScore(target, getFieldWeight('organization'));
+        return target;
       }
     },
     {
-      field: "contact.email",
-      validation: function (value) {
-
+      validation: function (target) {
+        return target['contact.email'] && isValidEmail(target['contact.email']);
       },
       outcome: function (target) {
-
+        target.score = getScore(target, getFieldWeight('contact.email'));
+        return target;
       }
     },
     {
-      field: "contact.name",
-      validation: function (value) {
-
+      validation: function (target) {
+        return target['contact.name'] ? true : false;
       },
       outcome: function (target) {
-
+        target.score = getScore(target, getFieldWeight('contact.name'));
+        return target;
       }
     },
     {
-      field: "contact.URL",
-      validation: function (value) {
-
+      validation: function (target) {
+        return target['contact.URL'] ? true : false;
       },
       outcome: function (target) {
-
+        target.score = getScore(target, getFieldWeight('contact.URL'));
+        return target;
       }
     },
     {
-      field: "contact.phone",
-      validation: function (value) {
-
+      validation: function (target) {
+        return target['contact.phone'] ? true : false;
       },
       outcome: function (target) {
-
+        target.score = getScore(target, getFieldWeight('contact.phone'));
+        return target;
       }
     },
     {
-      field: "tags",
-      validation: function (value) {
-
+      validation: function (target) {
+        return target['tags'] ? true : false;
       },
       outcome: function (target) {
+        target.score = getScore(
+          target.score,
+          getFieldWeight('tags') * target['tags'].length);
 
+          return target;
       }
     },
     {
-      field: "laborHours",
-      validation: function (value) {
-
+      validation: function (target) {
+        return target['laborHours'] ? true : false;
       },
       outcome: function (target) {
-
+        target.score = getScore(target, getFieldWeight('laborHours'));
+        return target;
       }
     },
     {
-      field: "languages",
-      validation: function (value) {
-
+      validation: function (target) {
+        return target['languages'] ? true : false;
       },
       outcome: function (target) {
+        target.score = getScore(
+          target.score,
+          getFieldWeight('languages') * target['languages']);
 
+        return target;
       }
     },
     {
-      field: "repositoryURL",
-      validation: function (value) {
-
+      validation: function (target) {
+        // not only should there be a value but also a proper URL
+        return target['repositoryURL'] && isValidUrl(target['repositoryURL']);
       },
       outcome: function (target) {
+        let tmpScore = 0;
+        if (target['permissions.usageType'] === 'openSource') {
+          // we want to give more weight to open source repos
+          tmpScore = 1;
+        } else {
+          tmpScore = getFieldWeight('languages');
+        }
 
+        target.score = getScore(target,tmpScore);
+        return target;
       }
     },
     {
-      field: "homepageURL",
-      validation: function (value) {
-
+      validation: function (target) {
+        return target['homepageURL'] && isValidUrl(target['homepageURL']);
       },
       outcome: function (target) {
-
+        target.score = getScore(target, getFieldWeight('homepageURL'));
+        return target;
       }
     },
     {
-      field: "downloadURL",
-      validation: function (value) {
-
+      validation: function (target) {
+        return target['downloadURL'] && isValidUrl(target['downloadURL']);
       },
       outcome: function (target) {
-
+        target.score = getScore(target, getFieldWeight('downloadURL'));
+        return target;
       }
     },
     {
-      field: "vcs",
-      validation: function (value) {
-
+      validation: function (target) {
+        return target['vcs'] ? true : false;
       },
       outcome: function (target) {
-
+        target.score = getScore(target, getFieldWeight('vcs'));
+        return target;
       }
     },
     {
-      field: "date.created",
-      validation: function (value) {
-
+      validation: function (target) {
+        return target['date.created'] ? true : false;
       },
       outcome: function (target) {
-
+        target.score = getScore(target, getFieldWeight('date.created'));
+        return target;
       }
     },
     {
-      field: "date.lastModified",
-      validation: function (value) {
-
+      validation: function (target) {
+        return target['date.lastModified'] ? true : false;
       },
       outcome: function (target) {
-
+        target.score = getScore(target, getFieldWeight('date.lastModified'));
+        return target;
       }
     },
     {
-      field: "date.metadataLastUpdated",
-      validation: function (value) {
-
+      validation: function (target) {
+        return target['date.metadataLastUpdated'] ? true : false;
       },
       outcome: function (target) {
-
+        target.score = getScore(target, getFieldWeight('date.metadataLastUpdated'));
+        return target;
       }
     },
     {
-      field: "version",
-      validation: function (value) {
-
+      validation: function (target) {
+        return target['version'] ? true : false;
       },
       outcome: function (target) {
-
+        target.score = getScore(target, getFieldWeight('version'));
+        return target;
       }
     },
     {
-      field: "status",
-      validation: function (value) {
-
+      validation: function (target) {
+        return target['status'] ? true : false;
       },
       outcome: function (target) {
-
+        target.score = getScore(target, getFieldWeight('status'));
+        return target;
       }
     },
     {
-      field: "disclaimerURL",
-      validation: function (value) {
-
+      validation: function (target) {
+        return target['disclaimerURL'] && isValidUrl(target['disclaimerURL']);
       },
       outcome: function (target) {
-
+        target.score = getScore(target, getFieldWeight('disclaimerURL'));
+        return target;
       }
     },
     {
-      field: "disclaimerText",
-      validation: function (value) {
-
+      validation: function (target) {
+        return target['disclaimerText'] ? true : false;
       },
       outcome: function (target) {
-
+        target.score = getScore(target, getFieldWeight('disclaimerText'));
+        return target;
       }
     },
     {
-      field: "relatedCode.name",
-      validation: function (value) {
-
+      validation: function (target) {
+        return target['relatedCode.name'] ? true : false;
       },
       outcome: function (target) {
-
+        target.score = getScore(target, getFieldWeight('relatedCode.name'));
+        return target;
       }
     },
     {
-      field: "relatedCode.URL",
-      validation: function (value) {
-
+      validation: function (target) {
+        return target['relatedCode.URL'] && isValidUrl(target['relatedCode.URL']);
       },
       outcome: function (target) {
-
+        target.score = getScore(target, getFieldWeight('relatedCode.URL'));
+        return target;
       }
     },
     {
-      field: "reusedCode.name",
-      validation: function (value) {
-
+      validation: function (target) {
+        return target['reusedCode.name'] ? true : false;
       },
       outcome: function (target) {
-
+        target.score = getScore(target, getFieldWeight('reusedCode.name'));
+        return target;
       }
     },
     {
-      field: "reusedCode.URL",
-      validation: function (value) {
-
+      validation: function (target) {
+        return target['reusedCode.URL'] && isValidUrl(target['reusedCode.URL']);
       },
       outcome: function (target) {
-
+        target.score = getScore(target, getFieldWeight('reusedCode.URL'));
+        return target;
       }
     },
     {
-      field: "partners.name",
-      validation: function (value) {
-
+      validation: function (target) {
+        return target['partners.name'] ? true : false;
       },
       outcome: function (target) {
-
+        target.score = getScore(target, getFieldWeight('partners.name'));
+        return target;
       }
     },
     {
-      field: "partners.email",
-      validation: function (value) {
-
+      validation: function (target) {
+        return target['partners.email'] && isValidEmail(target['partners.email']);
       },
       outcome: function (target) {
-
+        target.score = getScore(target, getFieldWeight('partners.email'));
+        return target;
       }
     },
     {
-      field: "target_operating_systems",
-      validation: function (value) {
-
+      validation: function (target) {
+        return target['target_operating_systems'] ? true : false;
       },
       outcome: function (target) {
-
+        target.score = getScore(target, getFieldWeight('target_operating_systems'));
+        return target;
       }
     },
     {
-      field: "additional_information",
-      validation: function (value) {
-
+      validation: function (target) {
+        return target['additional_information'] ? true : false;
       },
       outcome: function (target) {
-
+        target.score = getScore(target, getFieldWeight('additional_information'));
+        return target;
       }
-    },
+    }
   ]
 }
