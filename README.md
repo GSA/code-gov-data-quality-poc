@@ -1,4 +1,7 @@
-# code-gov-data-quality-poc
+# DEPRECATED 
+## This project repo is no longer being maintained. For more information on code-gov repos, go to [GSA/code-gov](https://github.com/GSA/code-gov).
+
+## code-gov-data-quality-poc
 
 Code.gov data quality scoring proof of concept
 
